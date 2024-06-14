@@ -90,9 +90,18 @@ class PNG_reader:
         encrypted_data = rsa_encryptor.encrypt_rsa(decompressed_data, public_key)
         self.encrypted_compressed_data = self._compress_idat(encrypted_data)
 
+
     def decrypt_idat(self, rsa_encryptor, private_key):
         decompressed_data = self._decompress_idat()
         decrypted_data = rsa_encryptor.decrypt_rsa(decompressed_data, private_key)
         self.decrypted_compressed_data = self._compress_idat(decrypted_data)
 
+    def encrypt_idat_ofb(self, rsa_encryptor, iv, public_key):
+        decompressed_data = self._decompress_idat()
+        encrypted_data = rsa_encryptor.encrypt_ofb(decompressed_data, iv, public_key)
+        self.encrypted_compressed_data = self._compress_idat(encrypted_data)
 
+    def decrypt_idat_ofb(self, rsa_encryptor, iv, public_key):
+        decompressed_data = self._decompress_idat()
+        decrypted_data = rsa_encryptor.decrypt_ofb(decompressed_data, iv, public_key)
+        self.decrypted_compressed_data = self._compress_idat(decrypted_data)

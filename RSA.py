@@ -1,5 +1,11 @@
 import os
-
+from Crypto.PublicKey import RSA as rsa_crypto
+from Crypto.Cipher import PKCS1_v1_5
+from Crypto.Util.Padding import pad
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 class RSA:
 
@@ -83,6 +89,25 @@ class RSA:
             ciphertext.extend(encrypted_block)
 
         return bytes(ciphertext)
+
+    def encrypt_ofb(self, plaintext, iv, public_key):
+        e, n = public_key
+        ciphertext = []
+        feedback = iv
+        for i in range(0, len(plaintext), self.key_size // 8 - 1):
+            output_block = pow(int.from_bytes(feedback, byteorder="big"), e, n)
+            output_bytes = output_block.to_bytes(self.key_size // 8, byteorder="big")
+            block = plaintext[i: i + self.key_size // 8 - 1]
+            encrypted_block = bytes(
+                [x ^ y for x, y in zip(block, output_bytes[: len(block)])]
+            )
+            ciphertext.extend(encrypted_block)
+            feedback = output_bytes
+        return bytes(ciphertext)
+
+    def decrypt_ofb(self, ciphertext, iv, public_key):
+
+        return self.encrypt_ofb(ciphertext, iv, public_key)
 
     # Deszyfrowanie wiadomości
     def decrypt_rsa(self, ciphertext, private_key):
