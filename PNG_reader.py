@@ -1,5 +1,8 @@
 import struct
 import zlib
+
+from Crypto.Random import get_random_bytes
+
 import RSA
 
 class PNG_reader:
@@ -7,6 +10,7 @@ class PNG_reader:
         self.mode = mode
         self.IDAT_data = b''
         self.chunks = []
+        self.iv = get_random_bytes(16)
 
     def read_png(self, filepath):
         with open(filepath, 'rb') as f:
@@ -85,15 +89,20 @@ class PNG_reader:
             crc = zlib.crc32(b"IEND")
             f_out.write(struct.pack(">I", crc))
 
-    def encrypt_idat(self, rsa_encryptor, public_key):
+    def encrypt_idat(self, rsa_encryptor, is_ecb, public_key):
         decompressed_data = self._decompress_idat()
-        encrypted_data = rsa_encryptor.encrypt_rsa(decompressed_data, public_key)
+        if is_ecb:
+            encrypted_data = rsa_encryptor.encrypt_rsa(decompressed_data, public_key)
+        else:
+            encrypted_data = rsa_encryptor.encrypt_ofb(decompressed_data, self.iv, public_key)
         self.encrypted_compressed_data = self._compress_idat(encrypted_data)
 
-
-    def decrypt_idat(self, rsa_encryptor, private_key):
+    def decrypt_idat(self, rsa_encryptor, is_ecb, private_key):
         decompressed_data = self._decompress_idat()
-        decrypted_data = rsa_encryptor.decrypt_rsa(decompressed_data, private_key)
+        if is_ecb:
+            decrypted_data = rsa_encryptor.decrypt_rsa(decompressed_data, private_key)
+        else:
+            decrypted_data = rsa_encryptor.decrypt_ofb(decompressed_data, self.iv, private_key)
         self.decrypted_compressed_data = self._compress_idat(decrypted_data)
 
     def encrypt_idat_ofb(self, rsa_encryptor, iv, public_key):

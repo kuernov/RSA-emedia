@@ -17,6 +17,7 @@ class TestPNGEncryption(unittest.TestCase):
         self.keys = self.generator.generate()
 
 
+
     def test_encryption(self):
         message = b"Example text for encryption using RSA."
         ciphertext = self.rsa.encrypt_rsa(message, self.keys[0])
@@ -37,7 +38,7 @@ class TestPNGEncryption(unittest.TestCase):
 
     def test_encrypt_decrypt_png(self):
         self.png_reader.read_png('2.png')
-        self.png_reader.encrypt_idat(self.rsa, self.keys[0])
+        self.png_reader.encrypt_idat(self.rsa, True, self.keys[0])
         # Step 3: Write the encrypted PNG to a file
         self.png_reader.write_png('encrypted_example.png')
 
@@ -46,15 +47,15 @@ class TestPNGEncryption(unittest.TestCase):
         self.png_reader.read_png('encrypted_example.png')
 
         # Step 5: Decrypt the IDAT chunk data
-        self.png_reader.decrypt_idat(self.rsa, self.keys[1])
+        self.png_reader.decrypt_idat(self.rsa,True, self.keys[1])
 
         # Step 6: Write the decrypted PNG to a file
         self.png_reader.write_png('decrypted_example.png', encrypted=False)
 
     def test_encrypt_decrypt_ofb(self):
         self.png_reader.read_png('2.png')
-        iv = get_random_bytes(16)
-        self.png_reader.encrypt_idat_ofb(self.rsa, iv, self.keys[0])
+
+        self.png_reader.encrypt_idat(self.rsa, False, self.keys[0])
         # Step 3: Write the encrypted PNG to a file
         self.png_reader.write_png('encrypted_example_ofb.png')
 
@@ -63,7 +64,7 @@ class TestPNGEncryption(unittest.TestCase):
         self.png_reader.read_png('encrypted_example_ofb.png')
 
         # Step 5: Decrypt the IDAT chunk data
-        self.png_reader.decrypt_idat_ofb(self.rsa, iv, self.keys[0])
+        self.png_reader.decrypt_idat(self.rsa, False, self.keys[0])
 
         # Step 6: Write the decrypted PNG to a file
         self.png_reader.write_png('decrypted_example_ofb.png', encrypted=False)
