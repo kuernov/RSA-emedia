@@ -6,11 +6,11 @@ from Crypto.Random import get_random_bytes
 import RSA
 
 class PNG_reader:
-    def __init__(self, mode):
+    def __init__(self, mode, iv=get_random_bytes(16)):
         self.mode = mode
         self.IDAT_data = b''
         self.chunks = []
-        self.iv = get_random_bytes(16)
+        self.iv = iv
 
     def read_png(self, filepath):
         with open(filepath, 'rb') as f:
